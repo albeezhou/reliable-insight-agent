@@ -1,0 +1,508 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Reliable Insight Agent — January 2022</title><style>
+  body { font-family:'Segoe UI',sans-serif; background:#f5f5f5; color:#202124;
+         line-height:1.6; margin:0; padding:20px; }
+  .container { max-width:960px; margin:0 auto; background:white;
+               padding:36px 44px; border-radius:8px;
+               box-shadow:0 2px 6px rgba(0,0,0,.1); }
+  h1  { color:#1b4297; border-bottom:3px solid #1b4297; padding-bottom:10px;
+        font-size:24px; margin-bottom:4px; }
+  h2  { color:#1b4297; border-left:4px solid #1b4297; padding-left:12px;
+        font-size:16px; margin-top:36px; margin-bottom:12px; }
+  h3  { color:#0f1f3d; font-size:13px; margin:16px 0 6px; }
+  p,li{ font-size:13.5px; }
+  .meta   { font-size:12px; color:#9aa0a6; margin-bottom:20px; }
+  .divider{ border-top:1px solid #e8eaed; margin:28px 0; }
+
+  .badge { display:inline-block; padding:2px 7px; border-radius:8px;
+           font-size:10.5px; font-weight:500; }
+  .b-grn  { background:#dcfce7; color:#16a34a; }
+  .b-yel  { background:#fff9e6; color:#b85a45; }
+  .b-red  { background:#fce8e6; color:#c5221f; }
+  .b-blue { background:#d2e1f6; color:#1b4297; }
+  .b-grey { background:#f1f3f4; color:#5f6368; }
+  .b-purp { background:#d2e1f6; color:#1e69d2; }
+
+  .insights-list { padding-left:18px; margin:8px 0; }
+  .insights-list li { margin:6px 0; font-size:13.5px; }
+
+  .sql-block { background:#f1f3f4; border-radius:4px; padding:12px;
+               font-family:monospace; font-size:11.5px; white-space:pre-wrap;
+               color:#3c4043; margin-top:6px; }
+
+  table { width:100%; border-collapse:collapse; font-size:13px; margin-top:10px; }
+  th { background:#f8f9fa; color:#5f6368; text-align:left; padding:8px 12px;
+       border:1px solid #e8eaed; font-size:11px; text-transform:uppercase;
+       letter-spacing:.05em; }
+  td { padding:8px 12px; border:1px solid #e8eaed; vertical-align:top; }
+  tr:nth-child(even) td { background:#fafafa; }
+
+  /* ── Analyst nav badges ─────────────────────────────────────────── */
+  .nav-row { display:flex; gap:8px; flex-wrap:wrap; margin:16px 0;
+             align-items:center; }
+  .nav-badge { display:inline-flex; align-items:center; gap:5px;
+               padding:5px 13px; border-radius:14px; font-size:12px;
+               font-weight:600; text-decoration:none; cursor:pointer;
+               border:1.5px solid transparent;
+               transition:box-shadow .15s; }
+  .nav-badge:hover { box-shadow:0 2px 6px rgba(0,0,0,.12); }
+  .nb-label { font-weight:400; opacity:.7; font-size:10px;
+              text-transform:uppercase; letter-spacing:.05em; }
+  .nb-val   { font-weight:700; }
+  .nb-arrow { font-size:9px; opacity:.5; }
+  .nb-adaptive-on   { background:#d2e1f6; color:#1e69d2; border-color:#78a5e4; }
+  .nb-adaptive-skip { background:#f1f3f4; color:#5f6368; border-color:#dadce0; }
+  .nb-trust-hi  { background:#dcfce7; color:#16a34a; border-color:#86efac; }
+  .nb-trust-med { background:#fff9e6; color:#b85a45; border-color:#ffcf73; }
+  .nb-trust-low { background:#fce8e6; color:#c5221f; border-color:#f5b8b4; }
+  .nb-questions { background:#fff9e6; color:#b85a45; border-color:#ffcf73; }
+
+  /* ── KPI Scorecard ─────────────────────────────────────────────── */
+  .scorecard-grid { display:grid; grid-template-columns:repeat(3,1fr);
+                    gap:10px; margin:16px 0 20px; }
+  .scorecard-tile { background:#fff; border:1px solid #e8eaed; border-radius:8px;
+                    padding:14px 16px; border-top:4px solid #dadce0; }
+  .tile-up   { border-top-color:#137333; }
+  .tile-down { border-top-color:#c5221f; }
+  .tile-flat { border-top-color:#9aa0a6; }
+  .sc-cat-chip { font-size:9px; font-weight:700; text-transform:uppercase;
+                 letter-spacing:.05em; padding:2px 7px; border-radius:10px;
+                 display:inline-block; margin-bottom:6px; }
+  .spotlight-badge { font-size:9px; text-transform:uppercase; letter-spacing:.06em;
+                     color:#8a6a00; font-weight:700; margin-bottom:4px; display:block; }
+  .tile-spotlight { box-shadow:0 0 0 2px #ffcf73,0 2px 8px rgba(255,207,115,.25); }
+  .sc-label  { font-size:10px; text-transform:uppercase; letter-spacing:.06em;
+               color:#9aa0a6; margin-bottom:4px; }
+  .sc-value  { font-size:19px; font-weight:700; color:#202124; margin-bottom:3px; }
+  .sc-change { font-size:12px; font-weight:600; }
+  .sc-up   { color:#137333; }
+  .sc-down { color:#c5221f; }
+  .sc-flat { color:#9aa0a6; }
+  .sc-yoy  { font-size:11px; color:#9aa0a6; margin-top:2px; }
+  .sc-yoy.sc-up   { color:#137333; opacity:.75; }
+  .sc-yoy.sc-down { color:#c5221f; opacity:.75; }
+  .tile-driver-wrap { margin-top:8px; padding-top:8px; border-top:1px solid #f1f3f4; }
+  .tile-driver-label { font-size:9px; text-transform:uppercase; letter-spacing:.05em;
+                       color:#9aa0a6; margin-bottom:3px; }
+  .tile-driver-label.label-investigated { color:#1b4297; }
+  .tile-driver-text  { font-size:12px; font-weight:600; color:#0f1f3d; line-height:1.3; }
+  .tile-driver-text.driver-possible { font-weight:400; color:#9aa0a6; font-style:italic; }
+  .tile-driver-link  { font-size:10px; color:#1b4297; text-decoration:none;
+                       display:inline-block; margin-top:4px; }
+  .tile-driver-link:hover { text-decoration:underline; }
+  .tile-extra { display:none; }
+  .scorecard-tile.tile-clickable { cursor:pointer; }
+  .scorecard-tile.tile-clickable:hover { box-shadow:0 2px 8px rgba(0,0,0,.10); }
+
+  /* ── Intelligence Brief (analyst) ─────────────────────────────── */
+  .brief-container { background:#fff; border:1px solid #e8eaed;
+                     border-left:5px solid #1b4297; border-radius:0 8px 8px 0;
+                     padding:20px 24px; margin:0 0 8px; }
+  .brief-text { font-size:15px; line-height:1.75; color:#0f1f3d; margin:0 0 14px; }
+  .signal-row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .cite-num { font-size:11px; color:#1b4297; text-decoration:none; font-weight:600;
+              margin:0 2px; padding:0 3px; border-radius:3px; }
+  .cite-num:hover { background:#d2e1f6; }
+
+  /* ── Executive Brief (one-pager 4-block) ───────────────────────── */
+  .exec-brief-outer { background:#fffcfa; border:1px solid #ede8e2;
+                      border-radius:8px; padding:20px 24px; }
+  .exec-brief-grid  { display:grid; grid-template-columns:repeat(4,1fr);
+                      gap:0; border:1px solid #ede8e2; border-radius:6px;
+                      overflow:hidden; }
+  .exec-brief-cell  { padding:14px 18px; border-right:1px solid #ede8e2;
+                      background:#fffcfa; }
+  .exec-brief-cell:last-child { border-right:none; }
+  .exec-brief-cell.cell-finding { background:#fff6f6; }
+  .exec-cell-label  { font-size:9px; font-weight:700; text-transform:uppercase;
+                      letter-spacing:.07em; color:#9aa0a6; margin-bottom:8px; }
+  .exec-cell-label.label-finding { color:#c5221f; }
+  .exec-cell-text   { font-size:13px; color:#202124; line-height:1.6; }
+
+  /* ── Back to top + animations ──────────────────────────────────── */
+  .back-top-btn { position:fixed; bottom:22px; right:22px; background:#1b4297;
+                  color:#fff; padding:7px 14px; border-radius:18px; font-size:12px;
+                  font-weight:600; text-decoration:none; z-index:1000;
+                  box-shadow:0 2px 8px rgba(27,66,151,.35); opacity:.85; }
+  .back-top-btn:hover { opacity:1; }
+  @keyframes highlight-pulse {
+    0%   { background:#d2e1f6; box-shadow:0 0 0 3px #1b4297; }
+    60%  { background:#e8f0ff; box-shadow:0 0 0 6px rgba(27,66,151,.08); }
+    100% { background:#fff;    box-shadow:none; }
+  }
+  .highlight-pulse { animation:highlight-pulse 2.5s ease-out forwards; }
+
+  /* ── Finding cards ─────────────────────────────────────────────── */
+  .finding-card { border:1px solid #e8eaed; margin:6px 0;
+                  padding:12px 16px; border-radius:6px;
+                  background:#fff; cursor:pointer;
+                  transition:background .12s; }
+  .finding-card:hover { background:#fafafa; }
+  .finding-card.ph-adaptive { background:#fefcff; }
+  .card-extra { display:none; margin-top:10px; }
+  .card-q { font-size:14px; font-weight:400; color:#5f6368; line-height:1.35; }
+  .card-badges { display:flex; gap:5px; align-items:center;
+                 flex-shrink:0; margin-left:16px; }
+  .finding-text { font-size:13px; color:#202124; margin:6px 0 0; line-height:1.55; }
+  .finding-meta { display:none; }
+  .finding-ev   { font-family:monospace; background:#f1f3f4; color:#5f6368;
+                  padding:1px 5px; border-radius:3px; font-size:10.5px; }
+
+  /* Finding group headers */
+  .finding-group-header { font-size:11px; color:#9aa0a6;
+                          padding:8px 0 3px; border-top:1px solid #f1f3f4;
+                          margin:10px 0 4px; }
+  .finding-group-header.group-primary {
+    font-weight:600; color:#5f6368; background:none; border-top:none;
+    padding:0 0 6px; margin:0 0 4px; font-size:11px;
+    text-transform:uppercase; letter-spacing:.05em;
+    display:flex; align-items:center; justify-content:space-between; }
+
+  /* ── Shareable divider ──────────────────────────────────────────── */
+  .report-divider { border-top:2px dashed #a5c3ed; margin:20px 0 14px;
+                    text-align:center; }
+  .divider-label  { display:inline-block; background:#fff; padding:0 14px;
+                    font-size:11px; color:#1b4297; font-weight:600;
+                    position:relative; top:-9px; letter-spacing:.03em; }
+
+  /* ── Collapsible sections ───────────────────────────────────────── */
+  details.detail-block { border:1px solid #e0e0e0; border-radius:6px;
+                          margin:4px 0; overflow:hidden; background:#fff; }
+  details.detail-block > summary {
+    padding:10px 16px; cursor:pointer; background:#fff;
+    list-style:none; user-select:none;
+    display:flex; align-items:center; gap:10px; }
+  details.detail-block > summary::-webkit-details-marker { display:none; }
+  details.detail-block > summary::before {
+    content:"›"; font-size:16px; font-weight:300; color:#c8c8c8;
+    flex-shrink:0; display:inline-block; line-height:1;
+    transition:transform .15s; }
+  details.detail-block[open] > summary::before { transform:rotate(90deg); }
+  details.detail-block[open] > summary { border-bottom:1px solid #ebebeb; }
+  details.detail-block > .detail-body { padding:14px 20px 18px; background:#fafafa; }
+  details.detail-block .divider { display:none; }
+  details.detail-block h2 { font-size:14px; margin-top:14px; }
+
+  /* Section title + outcome layout */
+  .sec-title   { flex:0 0 260px; }
+  .sec-outcome { font-size:11px; font-weight:400; color:#9aa0a6;
+                 white-space:nowrap; padding-left:20px;
+                 border-left:1px solid #ebebeb; }
+
+  /* Tier hierarchy — weight controls importance */
+  details.sec-tier-1 > summary { font-size:13px; font-weight:600; }
+  details.sec-tier-2 > summary { font-size:13px; font-weight:500; }
+  details.sec-tier-3 > summary { font-size:12px;  font-weight:500; }
+  details.sec-tier-4 > summary { font-size:11.5px; font-weight:400; }
+  details.sec-tier-4 > summary::before { color:#ddd; }
+
+  /* Section color identity — Ascension brand left borders */
+  details.section-findings   { border-left:3px solid #1b4297; }
+  details.section-findings   > summary { color:#1b4297; }
+  details.section-adaptive   { border-left:3px solid #1e69d2; }
+  details.section-adaptive   > summary { color:#1e69d2; }
+  details.section-questions  { border-left:3px solid #d57a65; }
+  details.section-questions  > summary { color:#b85a45; }
+  details.section-interp     { border-left:3px solid #1e69d2; }
+  details.section-interp     > summary { color:#1e69d2; }
+  details.section-guardrails { border-left:3px solid #16a34a; }
+  details.section-guardrails > summary { color:#16a34a; }
+  details.section-sql        { border-left:3px solid #94b7d5; }
+  details.section-sql        > summary { color:#5a6e96; }
+  details.section-timing     { border-left:3px solid #94b7d5; }
+  details.section-timing     > summary { color:#5a6e96; }
+
+  /* ── Adaptive investigation timeline ───────────────────────────── */
+  .tl-wrap  { position:relative; padding-left:22px; margin-top:6px; }
+  .tl-line  { position:absolute; left:4px; top:8px; bottom:8px;
+              width:1px; background:#e8eaed; }
+  .tl-step  { position:relative; margin-bottom:20px; }
+  .tl-step:last-child { margin-bottom:0; }
+  .tl-dot   { position:absolute; left:-18px; top:3px; width:8px; height:8px;
+              border-radius:50%; background:#fff; border:2px solid #bdc1c6; }
+  .tl-dot.dot-done { background:#16a34a; border-color:#16a34a; }
+  .tl-dot.dot-warn { background:#d57a65; border-color:#d57a65; }
+  .tl-label { font-size:10px; font-weight:600; text-transform:uppercase;
+              letter-spacing:.06em; color:#9aa0a6; margin-bottom:3px; }
+  .tl-content { font-size:13px; color:#202124; line-height:1.6; }
+  .tl-content.tl-muted { color:#5f6368; }
+  .tl-list  { margin:0; padding-left:16px; color:#5f6368;
+              line-height:1.9; font-size:13px; }
+
+  /* ── Open questions expandable evidence ─────────────────────────── */
+  details.ev-item > summary { list-style:none; cursor:pointer;
+    font-size:13px; color:#202124; padding:5px 0;
+    display:flex; align-items:center; gap:6px;
+    border-bottom:1px solid #f0f0f0; }
+  details.ev-item > summary::-webkit-details-marker { display:none; }
+  details.ev-item > summary .ev-arrow { font-size:9px; color:#bdc1c6; flex-shrink:0; }
+  details.ev-item > .ev-why { font-size:12px; color:#5f6368; padding:5px 0 2px 18px;
+                               line-height:1.5; }
+
+  /* ── Next steps ─────────────────────────────────────────────────── */
+  .next-step-row { display:flex; gap:12px; align-items:center; }
+  .step-num  { font-size:13px; font-weight:600; color:#bdc1c6;
+               flex-shrink:0; min-width:16px; }
+  .step-body { display:flex; flex-direction:column; gap:2px; }
+  .step-priority { font-size:10px; font-weight:700; text-transform:uppercase;
+                   letter-spacing:.05em; }
+  .step-action { font-size:13px; color:#202124; }
+
+  /* ── Trust validation ───────────────────────────────────────────── */
+  .trust-header { display:flex; align-items:center; gap:16px;
+                  margin-bottom:16px; padding-bottom:16px;
+                  border-bottom:1px solid #f0f0f0; }
+  .trust-level-label { font-size:9px; font-weight:600; text-transform:uppercase;
+                       letter-spacing:.06em; color:#9aa0a6; margin-bottom:2px; }
+  .trust-level-value { font-size:22px; font-weight:700; line-height:1; }
+  .trust-level-hi  { color:#16a34a; }
+  .trust-level-med { color:#d57a65; }
+  .trust-level-low { color:#c5221f; }
+  .trust-check { padding:10px 0; border-bottom:1px solid #f0f0f0; }
+  .trust-check:last-child { border-bottom:none; }
+  .trust-check-header { display:flex; align-items:center; gap:8px; }
+  .trust-check-num  { font-size:12px; color:#bdc1c6; min-width:18px; }
+  .trust-check-name { font-size:13px; font-weight:600; color:#202124; }
+  .trust-check-meta { font-size:11px; color:#9aa0a6; margin-top:2px;
+                      padding-left:26px; }
+  .trust-check-warn { font-size:12.5px; color:#b06000; margin-top:3px;
+                      padding-left:26px; }
+  .trust-check-fail { font-size:12.5px; color:#c5221f; margin-top:3px;
+                      padding-left:26px; }
+  .trust-footer { margin-top:14px; padding-top:14px;
+                  border-top:1px solid #f0f0f0; font-size:12.5px; }
+  .trust-footer.ok   { color:#16a34a; }
+  .trust-footer.warn { color:#d57a65; }
+  .trust-footer.fail { color:#c5221f; }
+
+  /* ── Verification detail ────────────────────────────────────────── */
+  .ver-detail { font-size:11px; color:#5f6368; background:#f1f3f4;
+                padding:4px 8px; border-radius:3px; margin-top:5px;
+                font-style:italic; }
+  .ver-contradicted { background:#fce8e6; color:#c5221f;
+                      font-style:normal; font-weight:600; }
+</style><script>
+  function openSection(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    if (el.tagName === 'DETAILS') { el.open = true; }
+    el.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  function toggleCard(el, evt) {
+    if (evt && evt.target) {
+      var ex0 = el.querySelector('.card-extra');
+      if (ex0 && ex0.contains(evt.target)) return;
+      if (evt.target.closest && evt.target.closest('a')) return;
+    }
+    var ex = el.querySelector('.card-extra');
+    if (!ex) return;
+    var visible = window.getComputedStyle(ex).display !== 'none';
+    ex.style.display = visible ? 'none' : 'block';
+  }
+  function toggleTile(el, evt) {
+    if (evt && evt.target) {
+      var ex0 = el.querySelector('.tile-extra');
+      if (ex0 && ex0.contains(evt.target)) return;
+      if (evt.target.closest && evt.target.closest('a')) return;
+    }
+    var ex = el.querySelector('.tile-extra');
+    if (!ex) return;
+    var visible = window.getComputedStyle(ex).display !== 'none';
+    ex.style.display = visible ? 'none' : 'block';
+  }
+  function scrollToFinding(id) {
+    document.querySelectorAll('.highlight-pulse').forEach(function(e) {
+      e.classList.remove('highlight-pulse');
+    });
+    var el = document.getElementById(id);
+    if (!el) return;
+    var p = el.parentElement;
+    while (p) { if (p.tagName === 'DETAILS') { p.open = true; } p = p.parentElement; }
+    el.scrollIntoView({behavior:'smooth', block:'start'});
+    void el.offsetWidth;
+    el.classList.add('highlight-pulse');
+  }
+</script></head><body><div class="container"><h1>Reliable Insight Agent — Investigation Report</h1><div class="meta">January 2022 vs December 2021 &nbsp;·&nbsp; Market: All markets&nbsp;·&nbsp; Generated: 2026-08-11 14:27 CDT</div><div class="nav-row"><a class="nav-badge nb-adaptive-on" href="#section-adaptive" onclick="openSection('section-adaptive'); return false;"><span class="nb-label">Investigation Decision</span><span class="nb-val">Performed</span><span class="nb-arrow">↓</span></a><a class="nav-badge nb-trust-hi" href="#audit-section" onclick="openSection('audit-section'); return false;"><span class="nb-label">Trust</span><span class="nb-val">High</span><span class="nb-arrow">↓</span></a><a class="nav-badge nb-questions" href="#section-questions" onclick="openSection('section-questions'); return false;"><span class="nb-label">Outstanding Questions</span><span class="nb-val">4</span><span class="nb-arrow">↓</span></a></div><div class="scorecard-grid"><div class="scorecard-tile tile-up tile-clickable tile-spotlight" onclick="toggleTile(this,event)"><span class="sc-cat-chip" style="background:#d2e1f6;color:#1b4297;">Volume</span><span class="spotlight-badge">★ Primary Focus</span><div class="sc-label">Total Encounters</div><div class="sc-value">10,830</div><div class="sc-change sc-up">▲ +47.3% vs December 2021</div><div class="sc-yoy sc-up">▲ +19.5% vs January 2021</div><div class="tile-extra"><div class="tile-driver-wrap"><div class="tile-driver-label label-investigated">Investigated driver</div><div class="tile-driver-text">Broad enterprise-wide encounter growth</div><a class="tile-driver-link" href="#finding-2" onclick="scrollToFinding('finding-2'); return false;">See findings →</a></div></div></div><div class="scorecard-tile tile-up tile-clickable" onclick="toggleTile(this,event)"><span class="sc-cat-chip" style="background:#d2e1f6;color:#1b4297;">Volume</span><div class="sc-label">Inpatient Discharges</div><div class="sc-value">2,028</div><div class="sc-change sc-up">▲ +35.0% vs December 2021</div><div class="sc-yoy sc-up">▲ +14.9% vs January 2021</div><div class="tile-extra"><div class="tile-driver-wrap"><div class="tile-driver-label label-investigated">Investigated driver</div><div class="tile-driver-text">Broad enterprise-wide growth</div><a class="tile-driver-link" href="#finding-5" onclick="scrollToFinding('finding-5'); return false;">See findings →</a></div></div></div><div class="scorecard-tile tile-up tile-clickable" onclick="toggleTile(this,event)"><span class="sc-cat-chip" style="background:#d2e1f6;color:#1b4297;">Volume</span><div class="sc-label">ED Acute Visits</div><div class="sc-value">2,266</div><div class="sc-change sc-up">▲ +105.6% vs December 2021</div><div class="sc-yoy sc-up">▲ +38.3% vs January 2021</div><div class="tile-extra"><div class="tile-driver-wrap"><div class="tile-driver-label label-investigated">Investigated driver</div><div class="tile-driver-text">Sudden January spike, not sustained</div><a class="tile-driver-link" href="#finding-9" onclick="scrollToFinding('finding-9'); return false;">See findings →</a></div></div></div><div class="scorecard-tile tile-up tile-clickable" onclick="toggleTile(this,event)"><span class="sc-cat-chip" style="background:#e2efe6;color:#4a7a5d;">Financial</span><div class="sc-label">Net Patient Revenue</div><div class="sc-value">$83.5M</div><div class="sc-change sc-up">▲ +$24.3M <span style="font-weight:400;opacity:.7;">(+41.0%)</span> vs December 2021</div><div class="sc-yoy sc-up">▲ +$11.9M (+16.7%) vs January 2021</div><div class="tile-extra"><div class="tile-driver-wrap"><div class="tile-driver-label">Possible cause</div><div class="tile-driver-text driver-possible">Payer mix shift</div></div></div></div><div class="scorecard-tile tile-down tile-clickable" onclick="toggleTile(this,event)"><span class="sc-cat-chip" style="background:#e2efe6;color:#4a7a5d;">Financial</span><div class="sc-label">Contribution Margin</div><div class="sc-value">$3.8M</div><div class="sc-change sc-down">▼ −$7.0M <span style="font-weight:400;opacity:.7;">(−64.5%)</span> vs December 2021</div><div class="sc-yoy sc-down">▼ −$9.2M (−70.7%) vs January 2021</div><div class="tile-extra"><div class="tile-driver-wrap"><div class="tile-driver-label label-investigated">Investigated driver</div><div class="tile-driver-text">Per-encounter margin significantly declined</div><a class="tile-driver-link" href="#finding-3" onclick="scrollToFinding('finding-3'); return false;">See findings →</a></div></div></div><div class="scorecard-tile tile-up tile-clickable" onclick="toggleTile(this,event)"><span class="sc-cat-chip" style="background:#ecd3e9;color:#b40f87;">Case Mix</span><div class="sc-label">Case Mix Index</div><div class="sc-value">1.02</div><div class="sc-change sc-up">▲ +2.0% vs December 2021</div><div class="sc-yoy sc-up">▲ +0.2% vs January 2021</div><div class="tile-extra"><div class="tile-driver-wrap"><div class="tile-driver-label">Possible cause</div><div class="tile-driver-text driver-possible">Higher acuity cases</div></div></div></div></div><div class="brief-container" id="brief-top"><p class="brief-text">For the market, January 2022 saw significant surges in patient encounters and net patient revenue, while contribution margin experienced a severe decline. Enterprise-wide, Contribution Margin per Total Encounter declined 75.9% <a href="#finding-3" onclick="scrollToFinding('finding-3'); return false;" style="text-decoration:none;" title="See finding 3"><sup style="color:#1b4297;font-size:10px;font-weight:700;">[3]</sup></a> from $1,466 to $353, despite a 47.3% increase in Total Encounters. This pattern may indicate significant cost pressures or an unfavorable shift in payer mix, potentially exacerbated by the Omicron variant surge. Analyze the payer mix by category for Contribution Margin to understand the financial impact of different patient populations.</p><div class="signal-row"><span style="font-size:11px;color:#5f6368;margin-right:6px;">Signals detected:</span><span class="badge b-red">⚠ Total Encounters +47.3%</span><span class="badge b-red">⚠ Inpatient Discharges +35.0%</span><span class="badge b-red">⚠ ED Acute Visits +105.6%</span><span class="badge b-red">⚠ Margin -64.5% vs Encounters +47.3%</span><span class="badge b-red">⚠ Net Patient Revenue +41.0%</span></div></div><div class="report-divider"><span class="divider-label">↑ Shareable Summary &nbsp;·&nbsp; Investigation Detail Below ↓</span></div><details class="detail-block detail-block section-findings sec-tier-1" id="findings-section" open><summary><span class="sec-title">What We Found</span><span class="sec-outcome">9 verified findings</span></summary><div class="detail-body"><span style="font-size:10px;color:#9aa0a6;font-family:monospace;background:#f1f3f4;padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:12px;">9 tool calls · 3 follow-up · click any finding to expand</span>
+<div class="finding-group-header group-primary"><span>Primary Investigation — Volume: Total Encounters</span></div>
+<div class="finding-card " id="finding-1" onclick="toggleCard(this,event)"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div class="card-q">Trend direction</div><div class="card-badges"><span class="badge b-grn">Numeric</span><span class="badge b-blue">Primary</span><span style="font-size:10px;color:#bdc1c6;">trend_over_months</span></div></div><p class="finding-text">Total Encounters across all markets surged to 10,830 in January 2022, following a mixed trend in prior months.</p><div class="card-extra"><div style="margin-top:10px;padding-top:10px;border-top:1px solid #f0f0f0;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#bdc1c6;margin-bottom:4px;">Why trust this finding</div><div style="font-size:12px;color:#5f6368;line-height:1.5;">Supported by historical trend data covering the investigation window. Direction is established across multiple periods, not inferred from a single data point.</div></div><details style="margin-top:10px;"><summary style="font-size:11px;color:#9aa0a6;cursor:pointer;user-select:none;list-style:none;font-weight:500;">▶ Raw BQ Data</summary><pre style="font-size:11px;color:#5f6368;background:#f1f3f4;padding:8px;border-radius:4px;margin:6px 0 0;white-space:pre-wrap;font-family:monospace;line-height:1.5;">Total Encounters trend — last 4 months (all markets):
+  Oct 2021: 7,710
+  Nov 2021: 7,724
+  Dec 2021: 7,350
+  Jan 2022: 10,830
+  Pattern: mixed — no clear sustained direction.</pre></details></div></div>
+<div class="finding-card " id="finding-2" onclick="toggleCard(this,event)"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div class="card-q">Market-level breakdown</div><div class="card-badges"><span class="badge b-grn">Numeric</span><span class="badge b-blue">Primary</span><span style="font-size:10px;color:#bdc1c6;">breakdown_by_market</span></div></div><p class="finding-text">The 47.3% enterprise-wide growth in Total Encounters was broadly distributed across all markets.</p><div class="card-extra"><div style="margin-top:10px;padding-top:10px;border-top:1px solid #f0f0f0;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#bdc1c6;margin-bottom:4px;">Why trust this finding</div><div style="font-size:12px;color:#5f6368;line-height:1.5;">Market contributions reconcile to the enterprise total. Shortfall share is compared against each market's baseline volume share.</div></div><details style="margin-top:10px;"><summary style="font-size:11px;color:#9aa0a6;cursor:pointer;user-select:none;list-style:none;font-weight:500;">▶ Raw BQ Data</summary><pre style="font-size:11px;color:#5f6368;background:#f1f3f4;padding:8px;border-radius:4px;margin:6px 0 0;white-space:pre-wrap;font-family:monospace;line-height:1.5;">Total Encounters by market (Jan 2022 vs Dec 2021):
+  WEST: 2,280 (Jan 2022) vs 1,547 (Dec 2021) → +733
+  EAST: 2,565 (Jan 2022) vs 1,741 (Dec 2021) → +824
+  SOUTH: 2,850 (Jan 2022) vs 1,934 (Dec 2021) → +916
+  NORTH: 3,135 (Jan 2022) vs 2,128 (Dec 2021) → +1,007
+Markets with growth this period: WEST, EAST, SOUTH, NORTH.</pre></details></div></div>
+<div class="finding-card " id="finding-3" onclick="toggleCard(this,event)"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div class="card-q">Financial vs volume ratio</div><div class="card-badges"><span class="badge b-grn">Numeric</span><span class="badge b-blue">Primary</span><span style="font-size:10px;color:#bdc1c6;">cross_kpi_ratio</span></div></div><p class="finding-text">Contribution Margin per Total Encounter across all markets declined 75.9% despite a significant volume increase.</p><div class="card-extra"><div style="margin-top:10px;padding-top:10px;border-top:1px solid #f0f0f0;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#bdc1c6;margin-bottom:4px;">Why trust this finding</div><div style="font-size:12px;color:#5f6368;line-height:1.5;">Both metrics are drawn from the same encounter population in the same period. Ratio compares absolute changes, controlling for volume scale.</div></div><details style="margin-top:10px;"><summary style="font-size:11px;color:#9aa0a6;cursor:pointer;user-select:none;list-style:none;font-weight:500;">▶ Raw BQ Data</summary><pre style="font-size:11px;color:#5f6368;background:#f1f3f4;padding:8px;border-radius:4px;margin:6px 0 0;white-space:pre-wrap;font-family:monospace;line-height:1.5;">Contribution Margin per Total Encounters (all markets):
+  Jan 2022: $3.8M / 10,830 = $353 per unit
+  Dec 2021: $10.8M / 7,350 = $1,466 per unit
+  Ratio declined 75.9% — Contribution Margin changed -64.5%, Total Encounters changed +47.3%.
+  Ratio decline exceeds volume decline — suggests pressure beyond pure volume effect.</pre></details></div></div>
+<div class="finding-card " id="finding-4" onclick="toggleCard(this,event)"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div class="card-q">Trend direction</div><div class="card-badges"><span class="badge b-grn">Numeric</span><span class="badge b-blue">Primary</span><span style="font-size:10px;color:#bdc1c6;">trend_over_months</span></div></div><p class="finding-text">The 35.0% month-over-month growth in Inpatient Discharges across all markets is a sharp increase, not a sustained trend.</p><div class="card-extra"><div style="margin-top:10px;padding-top:10px;border-top:1px solid #f0f0f0;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#bdc1c6;margin-bottom:4px;">Why trust this finding</div><div style="font-size:12px;color:#5f6368;line-height:1.5;">Supported by historical trend data covering the investigation window. Direction is established across multiple periods, not inferred from a single data point.</div></div><details style="margin-top:10px;"><summary style="font-size:11px;color:#9aa0a6;cursor:pointer;user-select:none;list-style:none;font-weight:500;">▶ Raw BQ Data</summary><pre style="font-size:11px;color:#5f6368;background:#f1f3f4;padding:8px;border-radius:4px;margin:6px 0 0;white-space:pre-wrap;font-family:monospace;line-height:1.5;">Inpatient Discharges trend — last 4 months (all markets):
+  Oct 2021: 1,608
+  Nov 2021: 1,506
+  Dec 2021: 1,502
+  Jan 2022: 2,028
+  Pattern: mixed — no clear sustained direction.</pre></details></div></div>
+<div class="finding-card " id="finding-5" onclick="toggleCard(this,event)"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div class="card-q">Market-level breakdown</div><div class="card-badges"><span class="badge b-grn">Numeric</span><span class="badge b-blue">Primary</span><span style="font-size:10px;color:#bdc1c6;">breakdown_by_market</span></div></div><p class="finding-text">The 35.0% enterprise-wide growth in Inpatient Discharges was broadly distributed across all markets.</p><div class="card-extra"><div style="margin-top:10px;padding-top:10px;border-top:1px solid #f0f0f0;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#bdc1c6;margin-bottom:4px;">Why trust this finding</div><div style="font-size:12px;color:#5f6368;line-height:1.5;">Market contributions reconcile to the enterprise total. Shortfall share is compared against each market's baseline volume share.</div></div><details style="margin-top:10px;"><summary style="font-size:11px;color:#9aa0a6;cursor:pointer;user-select:none;list-style:none;font-weight:500;">▶ Raw BQ Data</summary><pre style="font-size:11px;color:#5f6368;background:#f1f3f4;padding:8px;border-radius:4px;margin:6px 0 0;white-space:pre-wrap;font-family:monospace;line-height:1.5;">Inpatient Discharges by market (Jan 2022 vs Dec 2021):
+  WEST: 429 (Jan 2022) vs 314 (Dec 2021) → +115
+  SOUTH: 529 (Jan 2022) vs 409 (Dec 2021) → +120
+  EAST: 473 (Jan 2022) vs 335 (Dec 2021) → +138
+  NORTH: 597 (Jan 2022) vs 444 (Dec 2021) → +153
+Markets with growth this period: WEST, SOUTH, EAST, NORTH.</pre></details></div></div>
+<div class="finding-card " id="finding-6" onclick="toggleCard(this,event)"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div class="card-q">Financial vs volume ratio</div><div class="card-badges"><span class="badge b-grn">Numeric</span><span class="badge b-blue">Primary</span><span style="font-size:10px;color:#bdc1c6;">cross_kpi_ratio</span></div></div><p class="finding-text">Per-encounter economics worsened across all markets, as Contribution Margin per Inpatient Discharge declined 73.7%.</p><div class="card-extra"><div style="margin-top:10px;padding-top:10px;border-top:1px solid #f0f0f0;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#bdc1c6;margin-bottom:4px;">Why trust this finding</div><div style="font-size:12px;color:#5f6368;line-height:1.5;">Both metrics are drawn from the same encounter population in the same period. Ratio compares absolute changes, controlling for volume scale.</div></div><details style="margin-top:10px;"><summary style="font-size:11px;color:#9aa0a6;cursor:pointer;user-select:none;list-style:none;font-weight:500;">▶ Raw BQ Data</summary><pre style="font-size:11px;color:#5f6368;background:#f1f3f4;padding:8px;border-radius:4px;margin:6px 0 0;white-space:pre-wrap;font-family:monospace;line-height:1.5;">Contribution Margin per Inpatient Discharges (all markets):
+  Jan 2022: $3.8M / 2,028 = $1,884 per unit
+  Dec 2021: $10.8M / 1,502 = $7,175 per unit
+  Ratio declined 73.7% — Contribution Margin changed -64.5%, Inpatient Discharges changed +35.0%.
+  Ratio decline exceeds volume decline — suggests pressure beyond pure volume effect.</pre></details></div></div>
+<div class="finding-group-header group-primary"><span>Additional Investigation</span><a href="#section-adaptive" onclick="openSection('section-adaptive'); return false;" style="font-size:11px;color:#7b1fa2;font-weight:500;text-decoration:none;">See investigation decision →</a></div>
+<div class="finding-card ph-adaptive" id="finding-7" onclick="toggleCard(this,event)"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div class="card-q">Extended trend (seasonal check)</div><div class="card-badges"><span class="badge b-grn">Numeric</span><span class="badge b-purp">Follow-up</span><span style="font-size:10px;color:#bdc1c6;">extended_trend</span></div></div><p class="finding-text">Total Encounters across all markets surged significantly in January 2022 to 10,830, indicating a new structural trend rather than a seasonal pattern.</p><div class="card-extra"><div style="margin-top:10px;padding-top:10px;border-top:1px solid #f0f0f0;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#bdc1c6;margin-bottom:4px;">Why trust this finding</div><div style="font-size:12px;color:#5f6368;line-height:1.5;">8-month window covers at least one prior cycle, allowing seasonal patterns to be identified. The absence of a prior-year dip in the same period is a reliable indicator of non-seasonal change.</div></div><details style="margin-top:10px;"><summary style="font-size:11px;color:#9aa0a6;cursor:pointer;user-select:none;list-style:none;font-weight:500;">▶ Raw BQ Data</summary><pre style="font-size:11px;color:#5f6368;background:#f1f3f4;padding:8px;border-radius:4px;margin:6px 0 0;white-space:pre-wrap;font-family:monospace;line-height:1.5;">Total Encounters trend — last 8 months (all markets):
+  Jun 2021: 7,660
+  Jul 2021: 7,057
+  Aug 2021: 7,683
+  Sep 2021: 7,698
+  Oct 2021: 7,710
+  Nov 2021: 7,724
+  Dec 2021: 7,350
+  Jan 2022: 10,830
+  Pattern: mixed — no clear sustained direction.</pre></details></div></div>
+<div class="finding-card ph-adaptive" id="finding-8" onclick="toggleCard(this,event)"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div class="card-q">Extended trend (seasonal check)</div><div class="card-badges"><span class="badge b-grn">Numeric</span><span class="badge b-purp">Follow-up</span><span style="font-size:10px;color:#bdc1c6;">extended_trend</span></div></div><p class="finding-text">Despite January's rise to 2,028, Inpatient Discharges across all markets show no clear sustained trend.</p><div class="card-extra"><div style="margin-top:10px;padding-top:10px;border-top:1px solid #f0f0f0;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#bdc1c6;margin-bottom:4px;">Why trust this finding</div><div style="font-size:12px;color:#5f6368;line-height:1.5;">8-month window covers at least one prior cycle, allowing seasonal patterns to be identified. The absence of a prior-year dip in the same period is a reliable indicator of non-seasonal change.</div></div><details style="margin-top:10px;"><summary style="font-size:11px;color:#9aa0a6;cursor:pointer;user-select:none;list-style:none;font-weight:500;">▶ Raw BQ Data</summary><pre style="font-size:11px;color:#5f6368;background:#f1f3f4;padding:8px;border-radius:4px;margin:6px 0 0;white-space:pre-wrap;font-family:monospace;line-height:1.5;">Inpatient Discharges trend — last 8 months (all markets):
+  Jun 2021: 1,525
+  Jul 2021: 1,421
+  Aug 2021: 1,488
+  Sep 2021: 1,528
+  Oct 2021: 1,608
+  Nov 2021: 1,506
+  Dec 2021: 1,502
+  Jan 2022: 2,028
+  Pattern: mixed — no clear sustained direction.</pre></details></div></div>
+<div class="finding-card ph-adaptive" id="finding-9" onclick="toggleCard(this,event)"><div style="display:flex;justify-content:space-between;align-items:flex-start;"><div class="card-q">Trend direction</div><div class="card-badges"><span class="badge b-grn">Numeric</span><span class="badge b-purp">Follow-up</span><span style="font-size:10px;color:#bdc1c6;">trend_over_months</span></div></div><p class="finding-text">The critical spike in ED Acute Visits to 2,266 in January 2022 across all markets is a new event, not a sustained trend.</p><div class="card-extra"><div style="margin-top:10px;padding-top:10px;border-top:1px solid #f0f0f0;"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#bdc1c6;margin-bottom:4px;">Why trust this finding</div><div style="font-size:12px;color:#5f6368;line-height:1.5;">Supported by historical trend data covering the investigation window. Direction is established across multiple periods, not inferred from a single data point.</div></div><details style="margin-top:10px;"><summary style="font-size:11px;color:#9aa0a6;cursor:pointer;user-select:none;list-style:none;font-weight:500;">▶ Raw BQ Data</summary><pre style="font-size:11px;color:#5f6368;background:#f1f3f4;padding:8px;border-radius:4px;margin:6px 0 0;white-space:pre-wrap;font-family:monospace;line-height:1.5;">ED Acute Visits trend — last 4 months (all markets):
+  Oct 2021: 1,155
+  Nov 2021: 1,158
+  Dec 2021: 1,102
+  Jan 2022: 2,266
+  Pattern: mixed — no clear sustained direction.</pre></details></div></div></div></details><details class="detail-block detail-block section-adaptive sec-tier-2" id="section-adaptive"><summary><span class="sec-title">Adaptive Investigation Decision</span><span class="sec-outcome">3 follow-up investigations performed</span></summary><div class="detail-body"><div class="tl-wrap"><div class="tl-line"></div><div class="tl-step"><div class="tl-dot "></div><div class="tl-label">Status</div><div class="tl-content"><span class="badge b-purp">Additional investigation performed</span></div></div><div class="tl-step"><div class="tl-dot "></div><div class="tl-label">Why?</div><div class="tl-content">It is unclear whether the significant volume increase is a temporary seasonal surge or a more permanent structural shift, which dictates whether to plan for short-term capacity adjustments or long-term operational changes.</div></div><div class="tl-step"><div class="tl-dot "></div><div class="tl-label">Evidence Required</div><div class="tl-content"><ul class="tl-list"><li>Extended trend (seasonal check) for Total Encounters</li><li>Extended trend (seasonal check) for Inpatient Discharges</li><li>Trend direction for ED Acute Visits</li></ul></div></div><div class="tl-step"><div class="tl-dot "></div><div class="tl-label">Actions Taken</div><div class="tl-content"><ul class="tl-list"><li>Extended trend (seasonal check) — Total Encounters</li><li>Extended trend (seasonal check) — Inpatient Discharges</li><li>Trend direction — ED Acute Visits</li></ul></div></div><div class="tl-step"><div class="tl-dot dot-done"></div><div class="tl-label">Outcome</div><div class="tl-content">The follow-up investigation resolved the nature of the total encounter volume increase, establishing it as a new structural trend. However, the nature of the inpatient discharge and ED acute visit changes remains unclear, requiring further investigation to determine if they are anomalies or emerging trends.</div></div></div></div></details><details class="detail-block detail-block section-questions sec-tier-2" id="section-questions"><summary><span class="sec-title">Open Questions &amp; Next Steps</span><span class="sec-outcome">4 remaining</span></summary><div class="detail-body"><h3>What could not be determined</h3><p style="font-size:13px;color:#202124;margin:0 0 14px;line-height:1.6;">This investigation could not determine the specific cost drivers or payer mix shifts contributing to the severe margin compression despite significant volume growth.</p><div style="margin-top:10px;"><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#9aa0a6;margin-bottom:8px;">Missing Evidence</div><details class="ev-item"><summary><span class="ev-arrow">▶</span>Payer mix breakdown for Contribution Margin</summary><div class="ev-why">what this would confirm or rule out: whether severe margin compression is driven by a shift in payer mix</div></details><details class="ev-item"><summary><span class="ev-arrow">▶</span>Market-level breakdown for ED Acute Visits</summary><div class="ev-why">what this would confirm or rule out: whether the critical spike in ED Acute Visits is concentrated in specific markets or enterprise-wide</div></details><details class="ev-item"><summary><span class="ev-arrow">▶</span>Staffing levels or clinical capacity</summary><div class="ev-why">what this would confirm or rule out: whether increased labor costs from staffing shortages or contract labor contributed to margin decline</div></details><details class="ev-item"><summary><span class="ev-arrow">▶</span>Reimbursement rates or payer contract terms</summary><div class="ev-why">what this would confirm or rule out: whether changes in payment rates or contract terms impacted net patient revenue and contribution margin</div></details></div><h3 style="margin-top:20px;">Next Steps</h3><div class="next-step-row" style="margin:8px 0;"><span class="step-num">1</span><div class="step-body"><div class="step-priority" style="color:#c5221f;">Highest Priority</div><div class="step-action">Analyze payer mix by category for Contribution Margin</div></div></div><div class="next-step-row" style="margin:8px 0;"><span class="step-num">2</span><div class="step-body"><div class="step-priority" style="color:#b06000;">High Priority</div><div class="step-action">Examine ED Acute Visits by geographic region</div></div></div><div class="next-step-row" style="margin:8px 0;"><span class="step-num">3</span><div class="step-body"><div class="step-priority" style="color:#9aa0a6;">Medium Priority</div><div class="step-action">Review Net Patient Revenue trends by service line grouping</div></div></div></div></details><details class="detail-block detail-block section-interp sec-tier-2" id="section-interpretation"><summary><span class="sec-title">Analyst Interpretation</span><span class="sec-outcome">3 hypotheses · AI-generated</span></summary><div class="detail-body"><p style="font-size:12.5px;color:#9aa0a6;font-style:italic;margin:0 0 18px;line-height:1.6;">AI-generated synthesis based on verified findings. These interpretations are hypotheses, not validated conclusions.</p><ol style="padding-left:20px;margin:0;"><li style="margin-bottom:10px;">Likely severe cost increases (e.g., contract labor, supplies) due to the sudden, broad-based volume surge.</li><li style="margin-bottom:10px;">May indicate a shift in payer mix towards lower-reimbursement payers, eroding per-encounter revenue and margin.</li><li style="margin-bottom:10px;">Consistent with an enterprise-wide seasonal illness peak (e.g., Omicron variant) driving high-acuity volume across all markets.</li></ol><details style="margin-top:18px;border-top:1px solid #f0f0f0;padding-top:14px;"><summary style="list-style:none;cursor:pointer;user-select:none;font-size:11.5px;color:#9aa0a6;font-weight:500;display:flex;align-items:center;gap:6px;"><span style="font-size:9px;">▶</span> AI Reasoning Trace</summary><div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;"><div style="margin-bottom:10px;padding:10px 12px;background:#faf5ff;border-radius:4px;"><strong style="color:#7b1fa2;font-size:11px;">H1</strong> <span style="font-size:12px;color:#3c4043;line-height:1.5;">Triggered by the severe decline in Contribution Margin per encounter (75.9% for Total Encounters, 73.7% for Inpatient Discharges) despite significant volume growth across all markets. Domain knowledge indicates that such a divergence often points to increased variable costs like contract labor during volume surges or supply chain disruptions. Verify with variable direct costs (labor, supplies, drugs) if available. Confidence: HIGH.</span></div>
+<div style="margin-bottom:10px;padding:10px 12px;background:#faf5ff;border-radius:4px;"><strong style="color:#7b1fa2;font-size:11px;">H2</strong> <span style="font-size:12px;color:#3c4043;line-height:1.5;">Triggered by Net Patient Revenue growing slower than Total Encounters (41.0% vs 47.3%) and the sharp decline in Contribution Margin. Domain knowledge suggests that a shift towards a less favorable payer mix (e.g., more Medicaid or uninsured patients) can reduce revenue per encounter and compress margins. Verify with payer mix breakdown (COMMERCIAL, MEDICARE FFS, MEDICARE MA, MEDICAID, SELF-PAY). Confidence: MEDIUM.</span></div>
+<div style="margin-bottom:10px;padding:10px 12px;background:#faf5ff;border-radius:4px;"><strong style="color:#7b1fa2;font-size:11px;">H3</strong> <span style="font-size:12px;color:#3c4043;line-height:1.5;">Triggered by the broad-based, sudden and significant increase in Total Encounters (+47.3%), Inpatient Discharges (+35.0%), and ED Acute Visits (+105.6%) across all markets. Domain knowledge links such surges to seasonal illness peaks (like flu or RSV) or widespread public health events (like the Omicron variant surge). Verify with service line grouping (e.g., respiratory-related encounters) or external public health data. Confidence: HIGH.</span></div></div></details></div></details><details class="detail-block detail-block section-sql sec-tier-3" id="section-external-context"><summary><span class="sec-title">External Context</span><span class="sec-outcome">Search-grounded · Unverified · Context only</span></summary><div class="detail-body"><div style="background:#f8f9fa;border:1px solid #e0e0e0;border-radius:6px;padding:14px 18px;margin:8px 0;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.07em;color:#9aa0a6;">External Context</span><span style="font-size:10px;color:#bdc1c6;">·</span><span style="font-size:10px;color:#bdc1c6;font-style:italic;">Unverified · For interpretation only</span></div><div style="font-size:12px;color:#5f6368;font-style:italic;margin-bottom:10px;">Here are the major external events that likely influenced Demo Health System's metrics in January 2022:</div><ul style="padding-left:18px;margin:0;"><li style="margin:6px 0;font-size:13px;color:#3c4043;line-height:1.5;">Omicron Variant Surge: The Omicron variant became predominant in the U.S. in January 2022, leading to a massive surge in COVID-19 cases and hospitalizations, which would significantly increase total encounters, inpatient discharges, and</li></ul></div></div></details><details class="detail-block detail-block section-guardrails sec-tier-3" id="audit-section"><summary><span class="sec-title">Trust Validation</span><span class="sec-outcome">High trust · All checks passed</span></summary><div class="detail-body"><div class="trust-header"><div style="flex-shrink:0;"><div class="trust-level-label">Overall Trust</div><div class="trust-level-value trust-level-hi">High</div></div><div style="font-size:13px;color:#5f6368;line-height:1.6;">The report passed all automated validation checks before publication.</div></div><div class="trust-check"><div class="trust-check-header"><span class="trust-check-num">1.</span><span class="trust-check-name">Numerical Validation</span><span class="badge b-grn">Pass</span></div><div class="trust-check-meta">9 values confirmed against BigQuery (0 additionally verified semantically)</div></div><div class="trust-check"><div class="trust-check-header"><span class="trust-check-num">2.</span><span class="trust-check-name">Evidence Support</span><span class="badge b-grn">Pass</span></div><div class="trust-check-meta">9/9 findings supported</div></div><div class="trust-check"><div class="trust-check-header"><span class="trust-check-num">3.</span><span class="trust-check-name">Analytical Verification</span><span class="badge b-grn">Pass</span></div><div class="trust-check-meta">3 decisions justified</div></div><div class="trust-check"><div class="trust-check-header"><span class="trust-check-num">4.</span><span class="trust-check-name">Speculation Isolation</span><span class="badge b-grn">Pass</span></div><div class="trust-check-meta">3 hypothesis/hypotheses clearly labeled as speculative</div></div><div class="trust-footer ok">✓ The report passed all automated validation checks before publication.</div></div></details><details class="detail-block detail-block section-sql sec-tier-4"><summary><span class="sec-title">SQL Appendix</span><span class="sec-outcome">6 KPI queries + 9 tool queries · parameterized</span></summary><div class="detail-body"><p style="font-size:12.5px;color:#5f6368;margin-top:0;">Parameterized query templates executed against Demo Health BigQuery. Parameters are bound by the SDK — no string interpolation at any point.</p><details style="margin:8px 0;border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;"><summary style="padding:10px 16px;cursor:pointer;list-style:none;user-select:none;background:#f8f9fa;font-size:13px;font-weight:600;color:#3c4043;display:flex;align-items:center;gap:8px;"><span style="font-size:10px;color:#bdc1c6;">›</span>KPI Queries<span style="font-weight:400;font-size:11px;color:#9aa0a6;">6 queries — initial metric fetch</span></summary><div style="padding:8px 14px 12px;"><details style="margin:6px 0;border:1px solid #e8eaed;border-radius:5px;overflow:hidden;"><summary style="padding:8px 14px;cursor:pointer;list-style:none;user-select:none;background:#fafafa;font-size:12.5px;font-weight:600;color:#3c4043;display:flex;align-items:center;gap:6px;"><span style="font-size:9px;color:#bdc1c6;">›</span>Total Encounters<span style="font-weight:400;font-size:11px;color:#9aa0a6;margin-left:6px;">total_encounters.sql · 2026-08-11T19:25:15.243921Z · Job: e90397e3-31af-46eb-ad66-74ec3f58b782</span></summary><div style="padding:0 14px 12px;"><div class="sql-block" style="margin-top:10px;">SELECT
+  COUNT(DISTINCT encounter_id)  AS value,
+  COUNT(*)                      AS row_count
+FROM `demo-project.demo.demo_health_encounters`
+WHERE year_month = @year_month
+  AND (@market = '' OR market = @market)</div></div></details><details style="margin:6px 0;border:1px solid #e8eaed;border-radius:5px;overflow:hidden;"><summary style="padding:8px 14px;cursor:pointer;list-style:none;user-select:none;background:#fafafa;font-size:12.5px;font-weight:600;color:#3c4043;display:flex;align-items:center;gap:6px;"><span style="font-size:9px;color:#bdc1c6;">›</span>Inpatient Discharges<span style="font-weight:400;font-size:11px;color:#9aa0a6;margin-left:6px;">inpatient_discharges.sql · 2026-08-11T19:25:15.925990Z · Job: 43a4ed6d-8ac3-43b0-91c9-6f14b9ad3c51</span></summary><div style="padding:0 14px 12px;"><div class="sql-block" style="margin-top:10px;">SELECT
+  SUM(stat_discharges) AS value,
+  COUNT(*)             AS row_count
+FROM `demo-project.demo.demo_health_encounters`
+WHERE year_month = @year_month
+  AND (@market = '' OR market = @market)</div></div></details><details style="margin:6px 0;border:1px solid #e8eaed;border-radius:5px;overflow:hidden;"><summary style="padding:8px 14px;cursor:pointer;list-style:none;user-select:none;background:#fafafa;font-size:12.5px;font-weight:600;color:#3c4043;display:flex;align-items:center;gap:6px;"><span style="font-size:9px;color:#bdc1c6;">›</span>ED Acute Visits<span style="font-weight:400;font-size:11px;color:#9aa0a6;margin-left:6px;">ed_acute_visits.sql · 2026-08-11T19:25:16.643665Z · Job: 186d091d-83b6-4af2-8455-4601a1b7c617</span></summary><div style="padding:0 14px 12px;"><div class="sql-block" style="margin-top:10px;">SELECT
+  SUM(stat_ed_acute) AS value,
+  COUNT(*)           AS row_count
+FROM `demo-project.demo.demo_health_encounters`
+WHERE year_month = @year_month
+  AND (@market = '' OR market = @market)</div></div></details><details style="margin:6px 0;border:1px solid #e8eaed;border-radius:5px;overflow:hidden;"><summary style="padding:8px 14px;cursor:pointer;list-style:none;user-select:none;background:#fafafa;font-size:12.5px;font-weight:600;color:#3c4043;display:flex;align-items:center;gap:6px;"><span style="font-size:9px;color:#bdc1c6;">›</span>Net Patient Revenue<span style="font-weight:400;font-size:11px;color:#9aa0a6;margin-left:6px;">net_patient_revenue.sql · 2026-08-11T19:25:17.310075Z · Job: a8f8ddd9-cc35-45fe-bf8f-50c8d27fd30c</span></summary><div style="padding:0 14px 12px;"><div class="sql-block" style="margin-top:10px;">SELECT
+  SUM(net_revenue)  AS value,
+  COUNT(*)          AS row_count
+FROM `demo-project.demo.demo_health_encounters`
+WHERE year_month = @year_month
+  AND (@market = '' OR market = @market)</div></div></details><details style="margin:6px 0;border:1px solid #e8eaed;border-radius:5px;overflow:hidden;"><summary style="padding:8px 14px;cursor:pointer;list-style:none;user-select:none;background:#fafafa;font-size:12.5px;font-weight:600;color:#3c4043;display:flex;align-items:center;gap:6px;"><span style="font-size:9px;color:#bdc1c6;">›</span>Contribution Margin<span style="font-weight:400;font-size:11px;color:#9aa0a6;margin-left:6px;">contribution_margin.sql · 2026-08-11T19:25:17.976602Z · Job: 1cadf808-efd3-41df-a516-2d1a16170b43</span></summary><div style="padding:0 14px 12px;"><div class="sql-block" style="margin-top:10px;">SELECT
+  SUM(contribution_margin) AS value,
+  COUNT(*)                 AS row_count
+FROM `demo-project.demo.demo_health_encounters`
+WHERE year_month = @year_month
+  AND (@market = '' OR market = @market)</div></div></details><details style="margin:6px 0;border:1px solid #e8eaed;border-radius:5px;overflow:hidden;"><summary style="padding:8px 14px;cursor:pointer;list-style:none;user-select:none;background:#fafafa;font-size:12.5px;font-weight:600;color:#3c4043;display:flex;align-items:center;gap:6px;"><span style="font-size:9px;color:#bdc1c6;">›</span>Case Mix Index<span style="font-weight:400;font-size:11px;color:#9aa0a6;margin-left:6px;">case_mix_index.sql · 2026-08-11T19:25:18.643237Z · Job: 01b9a5b5-aea8-4d85-87e2-279e8cdcaae7</span></summary><div style="padding:0 14px 12px;"><div class="sql-block" style="margin-top:10px;">SELECT
+  SUM(complexity_weight) / NULLIF(COUNT(DISTINCT encounter_id), 0)  AS value,
+  COUNT(*)                                                           AS row_count
+FROM `demo-project.demo.demo_health_encounters`
+WHERE year_month = @year_month
+  AND (@market = '' OR market = @market)</div></div></details></div></details><details style="margin:8px 0;border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;"><summary style="padding:10px 16px;cursor:pointer;list-style:none;user-select:none;background:#f8f9fa;font-size:13px;font-weight:600;color:#3c4043;display:flex;align-items:center;gap:8px;"><span style="font-size:10px;color:#bdc1c6;">›</span>Investigation Tool Queries<span style="font-weight:400;font-size:11px;color:#9aa0a6;">8 unique tool templates used</span></summary><div style="padding:8px 14px 12px;"><details style="margin:6px 0;border:1px solid #e8eaed;border-radius:5px;overflow:hidden;"><summary style="padding:8px 14px;cursor:pointer;list-style:none;user-select:none;background:#fafafa;font-size:12.5px;font-weight:600;color:#3c4043;display:flex;align-items:center;gap:6px;"><span style="font-size:9px;color:#bdc1c6;">›</span>Trend Over Months — Total Encounters<span style="font-weight:400;font-size:11px;color:#9aa0a6;margin-left:6px;">trend_over_months.sql</span></summary><div style="padding:0 14px 12px;"><div class="sql-block" style="margin-top:10px;">-- Investigation tool: trend_over_months
+-- {aggregation} and {table} are filled by Python from config.
+-- Returns all complete months up to and including @reference_month.
+-- Python slices to n_months after fetching (BQ does not support LIMIT via parameter).
+SELECT
+  year_month,
+  {aggregation} AS value
+FROM `{table}`
+WHERE year_month <= @reference_month
+  AND (@market = '' OR market = @market)
+GROUP BY year_month
+ORDER BY year_month DESC</div></div></details><details style="margin:6px 0;border:1px solid #e8eaed;border-radius:5px;overflow:hidden;"><summary style="padding:8px 14px;cursor:pointer;list-style:none;user-select:none;background:#fafafa;font-size:12.5px;font-weight:600;color:#3c4043;display:flex;align-items:center;gap:6px;"><span style="font-size:9px;color:#bdc1c6;">›</span>Breakdown By Market — Total Encounters<span style="font-weight:400;font-size:11px;color:#9aa0a6;margin-left:6px;">breakdown_by_market.sql</span></summary><div style="padding:0 14px 12px;"><div class="sql-block" style="margin-top:10px;">-- Investigation tool: breakdown_by_market
+-- {aggregation} and {table} are filled by Python from config before this is sent to BQ.
+-- @year_month_curr and @year_month_prev are safe BQ parameterized values.
+SELECT
+  year_month,
+  market,
+  {aggregation} AS value
+FROM `{table}`
+WHERE year_month IN (@year_month_curr, @year_month_prev)
+GROUP BY year_month, market
+ORDER BY year_month DESC, value DESC</div></div></details><details style="margin:6px 0;border:1px solid #e8eaed;border-radius:5px;overflow:hidden;"><summary style="padding:8px 14px;cursor:pointer;list-style:none;user-select:none;background:#fafafa;font-size:12.5px;font-weight:600;color:#3c4043;display:flex;align-items:center;gap:6px;"><span style="font-size:9px;color:#bdc1c6;">›</span>Cross Kpi Ratio<span style="font-weight:400;font-size:11px;color:#9aa0a6;margin-left:6px;">cross_kpi_ratio.sql</span></summary><div style="padding:0 14px 12px;"><div class="sql-block" style="margin-top:10px;">-- Investigation tool: cross_kpi_ratio
+-- {agg_a}, {agg_b}, and {table} are filled by Python from config.
+-- Computes ratio of kpi_a / kpi_b for both periods in one query.
+SELECT
+  year_month,
+  {agg_a}                                                        AS kpi_a_value,
+  {agg_b}                                                        AS kpi_b_value,
+  SAFE_DIVIDE({agg_a}, NULLIF(CAST({agg_b} AS FLOAT64), 0))     AS ratio
+FROM `{table}`
+WHERE year_month IN (@year_month_curr, @year_month_prev)
+  AND (@market = '' OR market = @market)
+GROUP BY year_month
+ORDER BY year_month DESC</div></div></details><details style="margin:6px 0;border:1px solid #e8eaed;border-radius:5px;overflow:hidden;"><summary style="padding:8px 14px;cursor:pointer;list-style:none;user-select:none;background:#fafafa;font-size:12.5px;font-weight:600;color:#3c4043;display:flex;align-items:center;gap:6px;"><span style="font-size:9px;color:#bdc1c6;">›</span>Trend Over Months — Inpatient Discharges<span style="font-weight:400;font-size:11px;color:#9aa0a6;margin-left:6px;">trend_over_months.sql</span></summary><div style="padding:0 14px 12px;"><div class="sql-block" style="margin-top:10px;">-- Investigation tool: trend_over_months
+-- {aggregation} and {table} are filled by Python from config.
+-- Returns all complete months up to and including @reference_month.
+-- Python slices to n_months after fetching (BQ does not support LIMIT via parameter).
+SELECT
+  year_month,
+  {aggregation} AS value
+FROM `{table}`
+WHERE year_month <= @reference_month
+  AND (@market = '' OR market = @market)
+GROUP BY year_month
+ORDER BY year_month DESC</div></div></details><details style="margin:6px 0;border:1px solid #e8eaed;border-radius:5px;overflow:hidden;"><summary style="padding:8px 14px;cursor:pointer;list-style:none;user-select:none;background:#fafafa;font-size:12.5px;font-weight:600;color:#3c4043;display:flex;align-items:center;gap:6px;"><span style="font-size:9px;color:#bdc1c6;">›</span>Breakdown By Market — Inpatient Discharges<span style="font-weight:400;font-size:11px;color:#9aa0a6;margin-left:6px;">breakdown_by_market.sql</span></summary><div style="padding:0 14px 12px;"><div class="sql-block" style="margin-top:10px;">-- Investigation tool: breakdown_by_market
+-- {aggregation} and {table} are filled by Python from config before this is sent to BQ.
+-- @year_month_curr and @year_month_prev are safe BQ parameterized values.
+SELECT
+  year_month,
+  market,
+  {aggregation} AS value
+FROM `{table}`
+WHERE year_month IN (@year_month_curr, @year_month_prev)
+GROUP BY year_month, market
+ORDER BY year_month DESC, value DESC</div></div></details><details style="margin:6px 0;border:1px solid #e8eaed;border-radius:5px;overflow:hidden;"><summary style="padding:8px 14px;cursor:pointer;list-style:none;user-select:none;background:#fafafa;font-size:12.5px;font-weight:600;color:#3c4043;display:flex;align-items:center;gap:6px;"><span style="font-size:9px;color:#bdc1c6;">›</span>Extended Trend — Total Encounters<span style="font-weight:400;font-size:11px;color:#9aa0a6;margin-left:6px;">trend_over_months.sql (extended window, same template as trend)</span></summary><div style="padding:0 14px 12px;"><div class="sql-block" style="margin-top:10px;">-- Investigation tool: trend_over_months
+-- {aggregation} and {table} are filled by Python from config.
+-- Returns all complete months up to and including @reference_month.
+-- Python slices to n_months after fetching (BQ does not support LIMIT via parameter).
+SELECT
+  year_month,
+  {aggregation} AS value
+FROM `{table}`
+WHERE year_month <= @reference_month
+  AND (@market = '' OR market = @market)
+GROUP BY year_month
+ORDER BY year_month DESC</div></div></details><details style="margin:6px 0;border:1px solid #e8eaed;border-radius:5px;overflow:hidden;"><summary style="padding:8px 14px;cursor:pointer;list-style:none;user-select:none;background:#fafafa;font-size:12.5px;font-weight:600;color:#3c4043;display:flex;align-items:center;gap:6px;"><span style="font-size:9px;color:#bdc1c6;">›</span>Extended Trend — Inpatient Discharges<span style="font-weight:400;font-size:11px;color:#9aa0a6;margin-left:6px;">trend_over_months.sql (extended window, same template as trend)</span></summary><div style="padding:0 14px 12px;"><div class="sql-block" style="margin-top:10px;">-- Investigation tool: trend_over_months
+-- {aggregation} and {table} are filled by Python from config.
+-- Returns all complete months up to and including @reference_month.
+-- Python slices to n_months after fetching (BQ does not support LIMIT via parameter).
+SELECT
+  year_month,
+  {aggregation} AS value
+FROM `{table}`
+WHERE year_month <= @reference_month
+  AND (@market = '' OR market = @market)
+GROUP BY year_month
+ORDER BY year_month DESC</div></div></details><details style="margin:6px 0;border:1px solid #e8eaed;border-radius:5px;overflow:hidden;"><summary style="padding:8px 14px;cursor:pointer;list-style:none;user-select:none;background:#fafafa;font-size:12.5px;font-weight:600;color:#3c4043;display:flex;align-items:center;gap:6px;"><span style="font-size:9px;color:#bdc1c6;">›</span>Trend Over Months — ED Acute Visits<span style="font-weight:400;font-size:11px;color:#9aa0a6;margin-left:6px;">trend_over_months.sql</span></summary><div style="padding:0 14px 12px;"><div class="sql-block" style="margin-top:10px;">-- Investigation tool: trend_over_months
+-- {aggregation} and {table} are filled by Python from config.
+-- Returns all complete months up to and including @reference_month.
+-- Python slices to n_months after fetching (BQ does not support LIMIT via parameter).
+SELECT
+  year_month,
+  {aggregation} AS value
+FROM `{table}`
+WHERE year_month <= @reference_month
+  AND (@market = '' OR market = @market)
+GROUP BY year_month
+ORDER BY year_month DESC</div></div></details></div></details></div></details><details class="detail-block detail-block section-timing sec-tier-4"><summary><span class="sec-title">Pipeline Timing</span><span class="sec-outcome">2m 21s</span></summary><div class="detail-body"><p style="font-size:12.5px;color:#5f6368;">Total: <strong>2m 21s</strong> &nbsp;·&nbsp;<span class="badge b-purp">Gemini: 96.7s (68%)</span>&nbsp;<span class="badge b-blue">BigQuery: 18.3s (13%)</span></p><table><thead><tr><th>Step</th><th>Engine</th><th>Duration</th><th>Share</th><th>Calls</th><th>Bar</th></tr></thead><tbody><tr><td>BQ queries — current & previous periods</td><td><span class="badge b-blue">BigQuery</span></td><td style="font-weight:600;">9.30s</td><td style="font-size:11px;color:#5f6368;">6.6%</td><td style="font-size:11px;color:#5f6368;">12 calls</td><td><div style="background:#e8eaed;border-radius:3px;height:8px;width:120px;"><div style="background:#1a73e8;width:6%;height:8px;border-radius:3px;"></div></div></td></tr><tr><td>BQ queries — year-ago (January 2021)</td><td><span class="badge b-blue">BigQuery</span></td><td style="font-weight:600;">4.28s</td><td style="font-size:11px;color:#5f6368;">3.0%</td><td style="font-size:11px;color:#5f6368;">6 calls</td><td><div style="background:#e8eaed;border-radius:3px;height:8px;width:120px;"><div style="background:#1a73e8;width:3%;height:8px;border-radius:3px;"></div></div></td></tr><tr><td>Phase 1 investigation playbook (6 tool calls)</td><td><span class="badge b-blue">BigQuery</span></td><td style="font-weight:600;">4.74s</td><td style="font-size:11px;color:#5f6368;">3.3%</td><td style="font-size:11px;color:#5f6368;">6 calls</td><td><div style="background:#e8eaed;border-radius:3px;height:8px;width:120px;"><div style="background:#1a73e8;width:3%;height:8px;border-radius:3px;"></div></div></td></tr><tr><td>Adaptive evidence gap review (Gemini)</td><td><span class="badge b-purp">Gemini</span></td><td style="font-weight:600;">21.25s</td><td style="font-size:11px;color:#5f6368;">15.0%</td><td style="font-size:11px;color:#5f6368;">4 calls</td><td><div style="background:#e8eaed;border-radius:3px;height:8px;width:120px;"><div style="background:#9334e6;width:15%;height:8px;border-radius:3px;"></div></div></td></tr><tr><td>Interpretation calls (Gemini ×9)</td><td><span class="badge b-purp">Gemini</span></td><td style="font-weight:600;">40.72s</td><td style="font-size:11px;color:#5f6368;">28.8%</td><td style="font-size:11px;color:#5f6368;">9 calls</td><td><div style="background:#e8eaed;border-radius:3px;height:8px;width:120px;"><div style="background:#9334e6;width:28%;height:8px;border-radius:3px;"></div></div></td></tr><tr><td>Verification — numeric match (Python, 9 findings)</td><td><span class="badge b-grey">Python</span></td><td style="font-weight:600;">0.00s</td><td style="font-size:11px;color:#5f6368;">0.0%</td><td style="font-size:11px;color:#5f6368;">—</td><td><div style="background:#e8eaed;border-radius:3px;height:8px;width:120px;"><div style="background:#9aa0a6;width:2%;height:8px;border-radius:3px;"></div></div></td></tr><tr><td>Synthesis memo (Gemini)</td><td><span class="badge b-purp">Gemini</span></td><td style="font-weight:600;">34.77s</td><td style="font-size:11px;color:#5f6368;">24.6%</td><td style="font-size:11px;color:#5f6368;">1 call</td><td><div style="background:#e8eaed;border-radius:3px;height:8px;width:120px;"><div style="background:#9334e6;width:24%;height:8px;border-radius:3px;"></div></div></td></tr><tr><td>Guardrails (Python)</td><td><span class="badge b-grey">Python</span></td><td style="font-weight:600;">0.00s</td><td style="font-size:11px;color:#5f6368;">0.0%</td><td style="font-size:11px;color:#5f6368;">—</td><td><div style="background:#e8eaed;border-radius:3px;height:8px;width:120px;"><div style="background:#9aa0a6;width:2%;height:8px;border-radius:3px;"></div></div></td></tr><tr><td>Report assembly (Python)</td><td><span class="badge b-grey">Python</span></td><td style="font-weight:600;">0.00s</td><td style="font-size:11px;color:#5f6368;">0.0%</td><td style="font-size:11px;color:#5f6368;">—</td><td><div style="background:#e8eaed;border-radius:3px;height:8px;width:120px;"><div style="background:#9aa0a6;width:2%;height:8px;border-radius:3px;"></div></div></td></tr></tbody></table></div></details>
+<a class="back-top-btn" href="#brief-top" onclick="document.querySelectorAll('.highlight-pulse').forEach(function(e){e.classList.remove('highlight-pulse')});window.scrollTo({top:0,behavior:'smooth'}); return false;">↑ Top</a>
+<div style="border-top:1px solid #e8eaed;margin-top:32px;padding:16px 0 4px;text-align:center;"><p style="font-size:11px;color:#9aa0a6;margin:0;line-height:1.9;">Generated by Reliable Insight Agent &nbsp;·&nbsp; All report metrics verified against BigQuery.</p></div>
+</div></body></html>
