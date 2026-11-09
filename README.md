@@ -8,8 +8,8 @@ I developed this project during my summer 2026 internship with Ascension Data Sc
 
 Both examples use synthetic healthcare data. The organizations, financial figures, and operational changes are illustrative.
 
-- [Executive brief](executive-example.html): A concise summary of KPI changes, potential business implications, and recommended follow-up.
-- [Analyst report](analyst-example.html): Detailed findings, investigation steps, underlying evidence, open questions, and SQL provenance.
+- [Executive brief](https://albeezhou.github.io/reliable-insight-agent/executive-example.html): A concise summary of KPI changes, potential business implications, and recommended follow-up.
+- [Analyst report](https://albeezhou.github.io/reliable-insight-agent/analyst-example.html): Detailed findings, investigation steps, underlying evidence, open questions, and SQL provenance.
 
 Download the HTML files and open them in a browser to explore the reports.
 
